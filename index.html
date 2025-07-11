@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat in Tempo Reale</title>
+    <!-- Tailwind CSS per uno stile moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Stile per un'esperienza di scrolling fluida */
+        #chat-messages {
+            scroll-behavior: smooth;
+        }
+        /* Aggiunge uno sfondo leggero per distinguere il contenitore */
+        body {
+            background-color: #f0f2f5;
+        }
+    </style>
+</head>
+<body class="font-sans">
+
+    <div id="app" class="flex flex-col h-screen max-w-2xl mx-auto bg-white shadow-lg">
+
+        <!-- Header della Chat -->
+        <header class="bg-blue-600 text-white p-4 text-center shadow-md">
+            <h1 class="text-2xl font-bold">Chat Pubblica</h1>
+        </header>
+
+        <!-- Sezione per impostare il nome utente -->
+        <div id="username-container" class="p-4 flex items-center justify-center bg-gray-100">
+            <input type="text" id="username-input" placeholder="Inserisci il tuo nome..." class="border p-2 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow max-w-xs">
+            <button id="set-username-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-r-md">Imposta</button>
+        </div>
+
+        <!-- Contenitore dei messaggi -->
+        <main id="chat-messages" class="flex-1 p-4 overflow-y-auto bg-gray-50">
+            <!-- I messaggi verranno aggiunti qui da JavaScript -->
+        </main>
+
+        <!-- Form per inviare i messaggi -->
+        <footer class="p-4 bg-white border-t">
+            <form id="message-form" class="flex items-center">
+                <input type="text" id="message-input" placeholder="Scrivi un messaggio..." autocomplete="off" class="border p-3 rounded-l-full focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow" disabled>
+                <button type="submit" id="send-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-r-full" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                </button>
+            </form>
+        </footer>
+    </div>
+
+    <!-- Importazione dei moduli Firebase -->
+    <script type="module">
+        // Importa le funzioni necessarie dal SDK di Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // *******************************************************************
+        // CONFIGURAZIONE FIREBASE - INCOLLA QUI LA TUA CONFIGURAZIONE
+        // *******************************************************************
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyCzDfKhi2fLGFSEy-xEULV3DY79Kv9VeTA",
+  authDomain: "test3-chat.firebaseapp.com",
+  projectId: "test3-chat",
+  storageBucket: "test3-chat.firebasestorage.app",
+  messagingSenderId: "781794780430",
+  appId: "1:781794780430:web:23bce8504b3b5a5d0be35f"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+        // *******************************************************************
+
+        // Inizializza Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Riferimenti agli elementi del DOM
+        const chatMessages = document.getElementById('chat-messages');
+        const messageForm = document.getElementById('message-form');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const usernameContainer = document.getElementById('username-container');
+        const usernameInput = document.getElementById('username-input');
+        const setUsernameBtn = document.getElementById('set-username-btn');
+
+        let currentUser = null;
+        let username = `Utente-${Math.floor(Math.random() * 1000)}`; // Nome di default
+
+        // Gestione del nome utente
+        setUsernameBtn.addEventListener('click', () => {
+            const newUsername = usernameInput.value.trim();
+            if (newUsername) {
+                username = newUsername;
+                usernameContainer.innerHTML = `<p class="text-gray-600">Connesso come: <strong class="text-blue-600">${username}</strong></p>`;
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                messageInput.focus();
+            }
+        });
+        
+        usernameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                setUsernameBtn.click();
+            }
+        });
+
+
+        // Autenticazione anonima
+        signInAnonymously(auth).catch((error) => {
+            console.error("Errore di autenticazione anonima:", error);
+        });
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // L'utente è autenticato anonimamente
+                currentUser = user;
+                console.log("Utente anonimo connesso:", currentUser.uid);
+                // Ora che l'utente è autenticato, iniziamo ad ascoltare i messaggi
+                listenForMessages();
+            } else {
+                // L'utente non è connesso
+                currentUser = null;
+                console.log("Nessun utente connesso.");
+            }
+        });
+
+        // Funzione per inviare un messaggio
+        messageForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const messageText = messageInput.value.trim();
+
+            if (messageText && currentUser) {
+                addDoc(collection(db, 'messages'), {
+                    uid: currentUser.uid,
+                    username: username,
+                    text: messageText,
+                    createdAt: serverTimestamp()
+                }).then(() => {
+                    messageInput.value = '';
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }).catch(error => {
+                    console.error("Errore nell'invio del messaggio:", error);
+                });
+            }
+        });
+
+        // Funzione per ascoltare i messaggi in tempo reale
+        function listenForMessages() {
+            const q = query(collection(db, 'messages'), orderBy('createdAt'));
+
+            onSnapshot(q, (querySnapshot) => {
+                chatMessages.innerHTML = ''; // Pulisce la chat prima di aggiungere i nuovi messaggi
+                querySnapshot.forEach((doc) => {
+                    const message = doc.data();
+                    displayMessage(message);
+                });
+                 chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, (error) => {
+                console.error("Errore nella ricezione dei messaggi:", error);
+            });
+        }
+
+        // Funzione per visualizzare un singolo messaggio
+        function displayMessage(message) {
+            const isCurrentUser = message.uid === currentUser.uid;
+            const messageElement = document.createElement('div');
+            
+            messageElement.classList.add('mb-3', 'p-3', 'rounded-lg', 'max-w-xs', 'break-words');
+
+            if (isCurrentUser) {
+                // Messaggio dell'utente corrente (a destra)
+                messageElement.classList.add('bg-blue-500', 'text-white', 'ml-auto');
+            } else {
+                // Messaggio degli altri utenti (a sinistra)
+                messageElement.classList.add('bg-gray-200', 'text-gray-800', 'mr-auto');
+            }
+
+            const usernameElement = document.createElement('div');
+            usernameElement.classList.add('font-bold', 'text-sm', 'mb-1');
+            usernameElement.textContent = isCurrentUser ? 'Tu' : message.username;
+
+            const textElement = document.createElement('div');
+            textElement.textContent = message.text;
+
+            const timeElement = document.createElement('div');
+            timeElement.classList.add('text-xs', 'text-right', 'mt-1', isCurrentUser ? 'text-blue-200' : 'text-gray-500');
+            timeElement.textContent = message.createdAt ? new Date(message.createdAt.toDate()).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) : '';
+
+            messageElement.appendChild(usernameElement);
+            messageElement.appendChild(textElement);
+            messageElement.appendChild(timeElement);
+            
+            chatMessages.appendChild(messageElement);
+        }
+
+    </script>
+</body>
+</html>
