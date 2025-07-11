@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat in Tempo Reale</title>
+    <title>Chat Demo</title>
     <!-- Tailwind CSS per uno stile moderno -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -13,23 +13,24 @@
         }
         /* Aggiunge uno sfondo leggero per distinguere il contenitore */
         body {
-            background-color: #f0f2f5;
+            background-color: #f7f9fc;
         }
     </style>
 </head>
 <body class="font-sans">
 
-    <div id="app" class="flex flex-col h-screen max-w-2xl mx-auto bg-white shadow-lg">
+    <div id="app" class="flex flex-col h-screen max-w-2xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
 
         <!-- Header della Chat -->
-        <header class="bg-blue-600 text-white p-4 text-center shadow-md">
-            <h1 class="text-2xl font-bold">Chat Pubblica</h1>
+        <header class="bg-stone-100 text-gray-800 p-4 text-center border-b">
+            <h1 class="text-2xl font-bold text-gray-700">Chat Demo</h1>
+            <p class="text-sm text-gray-500">Per ogni dubbio chiamate Matteo, no noi.</p>
         </header>
 
         <!-- Sezione per impostare il nome utente -->
-        <div id="username-container" class="p-4 flex items-center justify-center bg-gray-100">
-            <input type="text" id="username-input" placeholder="Inserisci il tuo nome..." class="border p-2 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow max-w-xs">
-            <button id="set-username-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-r-md">Imposta</button>
+        <div id="username-container" class="p-4 flex items-center justify-center bg-stone-50">
+            <input type="text" id="username-input" placeholder="Inserisci il tuo nome..." class="border p-2 rounded-l-md focus:outline-none focus:ring-2 focus:ring-green-500 flex-grow max-w-xs">
+            <button id="set-username-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-r-md">Imposta</button>
         </div>
 
         <!-- Contenitore dei messaggi -->
@@ -40,10 +41,10 @@
         <!-- Form per inviare i messaggi -->
         <footer class="p-4 bg-white border-t">
             <form id="message-form" class="flex items-center">
-                <input type="text" id="message-input" placeholder="Scrivi un messaggio..." autocomplete="off" class="border p-3 rounded-l-full focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow" disabled>
-                <button type="submit" id="send-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-r-full" disabled>
+                <input type="text" id="message-input" placeholder="Scrivi un messaggio..." autocomplete="off" class="border p-3 rounded-l-full focus:outline-none focus:ring-2 focus:ring-green-500 flex-grow" disabled>
+                <button type="submit" id="send-button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-r-full" disabled>
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                     </svg>
                 </button>
             </form>
@@ -89,7 +90,7 @@
             const newUsername = usernameInput.value.trim();
             if (newUsername) {
                 username = newUsername;
-                usernameContainer.innerHTML = `<p class="text-gray-600">Connesso come: <strong class="text-blue-600">${username}</strong></p>`;
+                usernameContainer.innerHTML = `<p class="text-gray-600">Connesso come: <strong class="text-green-700">${username}</strong></p>`;
                 messageInput.disabled = false;
                 sendButton.disabled = false;
                 messageInput.focus();
@@ -167,7 +168,7 @@
 
             if (isCurrentUser) {
                 // Messaggio dell'utente corrente (a destra)
-                messageElement.classList.add('bg-blue-500', 'text-white', 'ml-auto');
+                messageElement.classList.add('bg-green-600', 'text-white', 'ml-auto');
             } else {
                 // Messaggio degli altri utenti (a sinistra)
                 messageElement.classList.add('bg-gray-200', 'text-gray-800', 'mr-auto');
@@ -181,7 +182,7 @@
             textElement.textContent = message.text;
 
             const timeElement = document.createElement('div');
-            timeElement.classList.add('text-xs', 'text-right', 'mt-1', isCurrentUser ? 'text-blue-200' : 'text-gray-500');
+            timeElement.classList.add('text-xs', 'text-right', 'mt-1', isCurrentUser ? 'text-green-200' : 'text-gray-500');
             timeElement.textContent = message.createdAt ? new Date(message.createdAt.toDate()).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) : '';
 
             messageElement.appendChild(usernameElement);
