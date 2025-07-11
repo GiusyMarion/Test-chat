@@ -57,32 +57,17 @@
         import { getFirestore, collection, addDoc, query, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // *******************************************************************
-        // CONFIGURAZIONE FIREBASE - INCOLLA QUI LA TUA CONFIGURAZIONE
-        // *******************************************************************
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+        // La tua configurazione Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCzDfKhi2fLGFSEy-xEULV3DY79Kv9VeTA",
+            authDomain: "test3-chat.firebaseapp.com",
+            projectId: "test3-chat",
+            storageBucket: "test3-chat.appspot.com",
+            messagingSenderId: "781794780430",
+            appId: "1:781794780430:web:23bce8504b3b5a5d0be35f"
+        };
 
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyCzDfKhi2fLGFSEy-xEULV3DY79Kv9VeTA",
-  authDomain: "test3-chat.firebaseapp.com",
-  projectId: "test3-chat",
-  storageBucket: "test3-chat.firebasestorage.app",
-  messagingSenderId: "781794780430",
-  appId: "1:781794780430:web:23bce8504b3b5a5d0be35f"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-        // *******************************************************************
-
-        // Inizializza Firebase
+        // Inizializza Firebase (UNA SOLA VOLTA)
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
